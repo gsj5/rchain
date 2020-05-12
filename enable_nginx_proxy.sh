@@ -96,9 +96,18 @@ else
 EOF
 fi
 
-NGINX_DOCKER="`docker ps -a | grep nginx|cut -d' ' -f1`"
-echo "$0: Remove old nginx container<${NGINX_DOCKER}>, and start a new one..."
-docker stop ${NGINX_DOCKER} && docker rm ${NGINX_DOCKER}
+# Create docker named bride if it doesn't exist
+docker_net="$(docker network ls|grep ' rchain-net ')"
+if [[ -z "$docker_net" ]]; then
+        docker network create rchain-net
+fi
+
+docker_nginx="`docker ps -a | grep nginx|cut -d' ' -f1`"
+if [[ -n "$docker_nginx" ]]; then
+	echo "$0: Remove old nginx container<${docker_nginx}>, and start a new one..."
+	docker stop ${docker_nginx} && docker rm ${docker_nginx}
+fi
+
 docker run -d  --name revproxy --network rchain-net \
 	-p 443:443  -p 40401:40401 -p 40403:40403 \
 	-v ${RNODE_NGINX_DIR}:/etc/nginx/conf.d:ro \
