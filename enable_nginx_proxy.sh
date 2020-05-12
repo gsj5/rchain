@@ -8,7 +8,7 @@
 HOST_NAME=`hostname -f`
 EMAIL_ADDR="rchain_sre@rchain.coop"
 RNODE_NGINX_DIR="/var/lib/rnode-static/nginx"
-RNODE_LOG_DIR="/var/lib/rnode-diag/current"
+RNODE_LOG_DIR="/var/lib/rnode-diag/current/nginx"
 
 set -e
 if [[ $EUID -ne 0 ]]; then 
@@ -76,6 +76,11 @@ else
         listen 40401 http2;
         access_log /var/log/nginx/access-grpc.log;
         error_log /var/log/nginx/error-grpc.log;
+
+	# https://nginx.org/en/docs/http/ngx_http_grpc_module.html
+	grpc_read_timeout 3600s;
+	grpc_send_timeout 3600s;
+
         location / {
             grpc_pass grpc://rnode:40401;
         }
